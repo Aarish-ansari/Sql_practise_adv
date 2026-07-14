@@ -169,3 +169,16 @@ FROM monthly_customer m
 LEFT JOIN retention r
 ON m.Purchase_Month=r.Purchase_Month
 ORDER BY Purchase_Month;
+
+select year(o.order_purchase_timestamp) as 'year', monthname(o.order_purchase_timestamp) as Month, 
+ot.seller_id , sum(ot.price+ot.freight_value) as 'Revenue'
+from order_items as ot 
+JOIN orders as o 
+on o.order_id=ot.order_id
+GROUP BY year(o.order_purchase_timestamp),
+month(o.order_purchase_timestamp),
+monthname(o.order_purchase_timestamp),
+ot.seller_id
+order by year(o.order_purchase_timestamp),
+month(o.order_purchase_timestamp),
+monthname(o.order_purchase_timestamp);
