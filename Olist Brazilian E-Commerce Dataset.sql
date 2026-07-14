@@ -113,3 +113,59 @@ on s.seller_id=ot.seller_id
 GROUP BY s.seller_id 
 order by Revenue desc;
 
+retention rate of customer Month per month 
+WITH customer_month AS (
+SELECT DISTINCT
+c.customer_unique_id,
+DATE_FORMAT(o.order_purchase_timestamp,'%Y-%m-01')
+AS Purchase_Month
+FROM orders o
+JOIN customers c
+ON o.customer_id=c.customer_id
+),
+customer_history AS (
+SELECT *,
+LAG(Purchase_Month)
+OVER(
+PARTITION BY customer_unique_id
+ORDER BY Purchase_Month
+) AS Previous_Month
+FROM customer_month
+),
+retention AS (
+SELECT
+Purchase_Month,
+COUNT(*) AS Retained_Customers
+FROM customer_history
+WHERE TIMESTAMPDIFF(
+MONTH,
+Previous_Month,
+Purchase_Month
+)=1
+GROUP BY Purchase_Month
+),
+monthly_customer AS (
+SELECT
+Purchase_Month,
+COUNT(DISTINCT customer_unique_id)
+AS Total_Customers
+FROM customer_month
+GROUP BY Purchase_Month
+)
+SELECT
+m.Purchase_Month,
+m.Total_Customers,
+COALESCE(r.Retained_Customers,0)
+AS Retained_Customers,
+ROUND(
+COALESCE(r.Retained_Customers,0)
+/
+LAG(m.Total_Customers)
+OVER(ORDER BY m.Purchase_Month)
+*100
+,2)
+AS Retention_Rate
+FROM monthly_customer m
+LEFT JOIN retention r
+ON m.Purchase_Month=r.Purchase_Month
+ORDER BY Purchase_Month;
