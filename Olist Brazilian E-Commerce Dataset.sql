@@ -182,3 +182,49 @@ ot.seller_id
 order by year(o.order_purchase_timestamp),
 month(o.order_purchase_timestamp),
 monthname(o.order_purchase_timestamp);
+SELECT
+    ot.seller_id,
+    MONTH(o.order_purchase_timestamp) AS month_no,
+    MONTHNAME(o.order_purchase_timestamp) AS month_name,
+    SUM(ot.price + ot.freight_value) AS revenue
+FROM orders o
+JOIN order_items ot
+    ON o.order_id = ot.order_id
+GROUP BY
+    ot.seller_id,
+    month_no,month_name
+ORDER BY
+    month_no desc;
+select DISTINCT count(seller_id) from order_items;
+SELECT
+    oi.seller_id,
+    GROUP_CONCAT(DISTINCT p.product_category_name
+                 ORDER BY p.product_category_name SEPARATOR "|") AS categories,
+    COUNT(DISTINCT p.product_category_name) AS category_count
+FROM order_items AS oi
+JOIN products AS p
+ON oi.product_id = p.product_id
+GROUP BY oi.seller_id
+HAVING COUNT(DISTINCT p.product_category_name) > 1
+ORDER BY category_count DESC;
+select ot.seller_id , 
+group_concat(DISTINCT p.product_category_name order BY p.product_category_name) as Category ,
+count(DISTINCT p.product_category_name) as Count
+from order_items as ot 
+join products as p 
+on p.product_id=ot.product_id
+group BY ot.seller_id
+order by Count desc;
+select review_score from reviews;
+SELECT
+    p.product_category_name AS product_name,
+    SUM(ot.price + ot.freight_value) AS total_revenue,
+    AVG(r.review_score) AS avg_rating
+FROM order_items AS ot
+JOIN products AS p
+    ON ot.product_id = p.product_id
+JOIN reviews AS r
+    ON ot.order_id = r.order_id
+GROUP BY p.product_category_name
+HAVING AVG(r.review_score) < 3.5
+ORDER BY total_revenue DESC;
