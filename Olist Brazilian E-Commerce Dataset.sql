@@ -228,3 +228,20 @@ JOIN reviews AS r
 GROUP BY p.product_category_name
 HAVING AVG(r.review_score) < 3.5
 ORDER BY total_revenue DESC;
+select * from (
+    SELECT
+       p.product_category_name,
+        oi.product_id,
+        SUM(oi.price + oi.freight_value) AS revenue,
+        RANK() OVER(
+            PARTITION BY p.product_category_name
+            ORDER BY SUM(oi.price + oi.freight_value) DESC
+        ) AS rnk
+    FROM order_items oi
+    JOIN products p
+        ON oi.product_id = p.product_id
+    GROUP BY
+        p.product_category_name,
+        oi.product_id 
+) t
+WHERE t.rnk <= 3;
