@@ -274,3 +274,12 @@ JOIN order_items oi
 WHERE o.order_delivered_customer_date IS NOT NULL
 GROUP BY oi.seller_id
 ORDER BY avg_delivery_delay DESC;
+
+select c.customer_state  as 'State', 
+avg(datediff(o.order_delivered_customer_date,o.order_purchase_timestamp)) as avg_time
+from orders as o 
+join customers as c
+on c.customer_id=o.customer_id
+GROUP BY c.customer_state 
+order by avg_time DESC;
+
