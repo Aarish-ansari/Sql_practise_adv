@@ -283,3 +283,25 @@ on c.customer_id=o.customer_id
 GROUP BY c.customer_state 
 order by avg_time DESC;
 
+SELECT *
+FROM (
+    SELECT
+        p.product_category_name,
+        c.customer_state AS state,
+        COUNT(*) AS purchase_count,
+        ROW_NUMBER() OVER (
+            PARTITION BY c.customer_state
+            ORDER BY COUNT(*) DESC
+        ) AS rnk
+    FROM customers c
+    JOIN orders o
+        ON c.customer_id = o.customer_id
+    JOIN order_items ot
+        ON o.order_id = ot.order_id
+    JOIN products p
+        ON ot.product_id = p.product_id
+    GROUP BY
+        p.product_category_name,
+        c.customer_state
+) AS t
+WHERE rnk = 1
