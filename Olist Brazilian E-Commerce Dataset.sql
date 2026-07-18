@@ -323,3 +323,18 @@ SELECT
     AVG(order_value) AS AOV
 FROM cte
 GROUP BY product_category;
+SELECT
+    MONTH(o.order_purchase_timestamp) AS month_num,
+    MONTHNAME(o.order_purchase_timestamp) AS month_name,
+    SUM(ot.price + ot.freight_value) AS revenue,
+    SUM(SUM(ot.price + ot.freight_value)) OVER (
+        ORDER BY MONTH(o.order_purchase_timestamp)
+        ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+    ) AS rolling_revenue
+FROM orders o
+JOIN order_items ot
+ON o.order_id = ot.order_id
+GROUP BY
+    MONTH(o.order_purchase_timestamp),
+    MONTHNAME(o.order_purchase_timestamp)
+ORDER BY month_num;
