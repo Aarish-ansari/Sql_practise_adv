@@ -305,3 +305,21 @@ FROM (
         c.customer_state
 ) AS t
 WHERE rnk = 1
+WITH cte AS (
+    SELECT
+        ot.order_id,
+        p.product_category_name AS product_category,
+        SUM(ot.price + ot.freight_value) AS order_value
+    FROM order_items AS ot
+    JOIN products AS p
+        ON ot.product_id = p.product_id
+    GROUP BY
+        ot.order_id,
+        p.product_category_name
+)
+
+SELECT
+    product_category,
+    AVG(order_value) AS AOV
+FROM cte
+GROUP BY product_category;
