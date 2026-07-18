@@ -264,3 +264,13 @@ SELECT
     AVG(order_value) AS AOV
 FROM cte
 GROUP BY product_category;
+SELECT
+    oi.seller_id,
+    AVG(DATEDIFF(o.order_delivered_customer_date,
+                 o.order_estimated_delivery_date)) AS avg_delivery_delay
+FROM orders o
+JOIN order_items oi
+    ON o.order_id = oi.order_id
+WHERE o.order_delivered_customer_date IS NOT NULL
+GROUP BY oi.seller_id
+ORDER BY avg_delivery_delay DESC;
